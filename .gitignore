@@ -1,0 +1,4 @@
+.streamlit/secrets.toml
+data/logs_simulaciones/
+__pycache__/
+*.pyc

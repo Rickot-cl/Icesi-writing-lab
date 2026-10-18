@@ -1,0 +1,14 @@
+{
+  "course": "English Level 2 - Universidad Icesi",
+  "priority_errors": [
+    "Subject-Verb Agreement (e.g., 'he go', 'they is')",
+    "Verb Tenses (Simple Present vs. Present Continuous / Past Simple)",
+    "Sentence Structure and Syntax (missing subjects, run-on sentences, word order)",
+    "Vocabulary Choice and False Friends (e.g., 'embarrassed' vs. 'pregnant')"
+  ],
+  "scaffolding_rules": {
+    "step_1": "Indirect Hint: Highlight the error location and ask a guiding question without giving the correction.",
+    "step_2": "Rule Explanation: If the user fails to correct it, briefly explain the underlying grammar rule.",
+    "step_3": "Model & Practice: If the user still struggles, provide the correct model and ask them to write a new sentence."
+  }
+}
