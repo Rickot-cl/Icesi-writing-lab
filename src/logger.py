@@ -2,6 +2,7 @@ import pandas as pd
 import os
 from datetime import datetime
 import io
+import streamlit as st
 
 LOGS_DIR = os.path.join("data", "logs_simulaciones")
 MASTER_EXCEL_PATH = os.path.join(LOGS_DIR, "Icesi_Writing_Lab_Master_Logs.xlsx")
@@ -11,6 +12,7 @@ def ensure_logs_directory():
         os.makedirs(LOGS_DIR)
 
 def save_interaction_gsheet(session_id, student_name, student_code, student_profile, turn, user_message, ai_response):
+    """Guarda la interacción tanto en memoria local/Excel como en Google Sheets para persistencia."""
     ensure_logs_directory()
     
     new_record = {
@@ -25,16 +27,30 @@ def save_interaction_gsheet(session_id, student_name, student_code, student_prof
     }
     
     df_new = pd.DataFrame([new_record])
- 
+    
+    # 1. Guardar localmente en la sesión activa
     if not os.path.exists(MASTER_EXCEL_PATH):
         df_new.to_excel(MASTER_EXCEL_PATH, index=False, engine="openpyxl")
     else:
-        df_existing = pd.read_excel(MASTER_EXCEL_PATH, engine="openpyxl")
-        df_combined = pd.concat([df_existing, df_new], ignore_index=True)
-        df_combined.to_excel(MASTER_EXCEL_PATH, index=False, engine="openpyxl")
+        try:
+            df_existing = pd.read_excel(MASTER_EXCEL_PATH, engine="openpyxl")
+            df_combined = pd.concat([df_existing, df_new], ignore_index=True)
+            df_combined.to_excel(MASTER_EXCEL_PATH, index=False, engine="openpyxl")
+        except Exception:
+            df_new.to_excel(MASTER_EXCEL_PATH, index=False, engine="openpyxl")
+
+    # 2. Guardar en Google Sheets usando la URL configurada en Secrets
+    gsheet_url = st.secrets.get("GSHEET_URL", "")
+    if gsheet_url:
+        try:
+            # Petición para registrar en Google Sheets / AppScript si está configurado
+            import requests
+            requests.post(gsheet_url, json=new_record, timeout=5)
+        except Exception as e:
+            st.warning(f"Note: Cloud backup sync skipped ({e})")
 
 def generate_excel_bytes(dataframe):
-    """Generates an in-memory Excel file with two structured tabs for teachers."""
+    """Genera el archivo de Excel descargable en memoria con dos pestañas."""
     output = io.BytesIO()
     
     summary_df = dataframe.groupby("Session ID").agg(
